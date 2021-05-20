@@ -1,0 +1,18 @@
+<div class="row">
+    {{#each products}}
+        <div class="col-md-4 mb-3 ">
+            <div class="card">
+               <div class="card-header">
+                   <a href="/products/product/{{_id}}" class="link">{{name}}</a>
+               </div>
+                <img src="{{img_path}}" class="card-img-top img-fluid w-75 h-75 mx-auto" alt="{{name}}">
+                <div class="card-body">
+                    <p class="card-text">{{description}}</p>
+                    <h5 class="card-text"><strong>{{price}}$</strong></h5>
+                    <p class="card-text"><small class="text-muted">{{timeago created_at}}</small></p>
+                </div>
+
+            </div>
+        </div>
+    {{/each}}
+</div>

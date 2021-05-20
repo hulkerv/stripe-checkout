@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Node Stripe Checkout</title>
+    <!--Font Awesome-->
+    <script src="https://kit.fontawesome.com/f616962a9f.js" crossorigin="anonymous"></script>
+    <!--Bootstrap 4-->
+    <link rel="stylesheet" href="https://bootswatch.com/4/cosmo/bootstrap.min.css" >
+    <!--Custom CSS-->
+    <link rel="stylesheet" href="/styles.css" >
+    <!--Stripe-->
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+
+</head>
+
+<body>
+    {{>navigation}}
+
+    <div class="container p-4">
+        {{>messages}}
+        {{>errors}}
+        {{{body}}}
+    </div>
+
+    <!--Scripts-->
+    {{>scripts}}
+</body>
+
+</html>

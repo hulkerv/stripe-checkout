@@ -1,0 +1,167 @@
+<!--Filename in input type file-->
+<script>
+    document.getElementById('inputGroupFile01').onchange = function() {
+        console.log(this.value);
+        document.getElementById('name-file').innerHTML = document.getElementById('inputGroupFile01').files[0].name;
+    }
+
+</script>
+
+<!--Bootstrap 4-->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+
+<!--Stripe button-->
+<!--
+<script type="text/javascript">
+    // Create an instance of the Stripe object with your publishable API key
+    var stripe = Stripe('pk_test_51ISijRIx4GJq6ePAFlzlkrq68ZpFKghWod01BzPCDiIUHAuEUYTnAa5U3QqZkqNydlFblxutV3xy3EW0atZ4v1bt00XTex8Btl');
+    var checkoutButton = document.getElementById('checkout-button');
+
+    checkoutButton.addEventListener('click', function() {
+        // Create a new Checkout Session using the server-side endpoint you
+        // created in step 3.
+        fetch('/create-checkout-session', {
+                method: 'POST',
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(session) {
+                return stripe.redirectToCheckout({
+                    sessionId: session.id
+                });
+            })
+            .then(function(result) {
+                // If `redirectToCheckout` fails due to a browser or network
+                // error, you should display the localized error message to your
+                // customer using `error.message`.
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+            });
+    });
+
+</script>
+-->
+
+<script>
+        // A reference to Stripe.js initialized with your real test publishable API key.
+    var stripe = Stripe("pk_test_51ISijRIx4GJq6ePAFlzlkrq68ZpFKghWod01BzPCDiIUHAuEUYTnAa5U3QqZkqNydlFblxutV3xy3EW0atZ4v1bt00XTex8Btl");
+    // The items the customer wants to buy
+    var purchase = {
+        items: [{
+            id: "xl-tshirt"
+        }]
+    };
+    // Disable the button until we have Stripe set up on the page
+    document.querySelector("button").disabled = true;
+    fetch("/create-payment-intent", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(purchase)
+        })
+        .then(function(result) {
+            return result.json();
+        })
+        .then(function(data) {
+            var elements = stripe.elements();
+            var style = {
+                base: {
+                    color: "#000",
+                    fontFamily: 'Courier, monospace',
+                    fontSmoothing: "antialiased",
+                    fontSize: "16px",
+                    "::placeholder": {
+                        color: "#000"
+                    }
+                },
+                invalid: {
+                    fontFamily: 'Courier, monospace',
+                    color: "#fa755a",
+                    iconColor: "#fa755a"
+                }
+            };
+            var card = elements.create("card", {
+                style: style
+            });
+            // Stripe injects an iframe into the DOM
+            card.mount("#card-element");
+            card.on("change", function(event) {
+                // Disable the Pay button if there are no card details in the Element
+                document.querySelector("button").disabled = event.empty;
+                document.querySelector("#card-error").textContent = event.error ? event.error.message : "";
+            });
+            var form = document.getElementById("payment-form");
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                // Complete payment when the submit button is clicked
+                payWithCard(stripe, card, data.clientSecret);
+            });
+        });
+    // Calls stripe.confirmCardPayment
+    // If the card requires authentication Stripe shows a pop-up modal to
+    // prompt the user to enter authentication details without leaving your page.
+    var payWithCard = function(stripe, card, clientSecret) {
+        loading(true);
+        stripe
+            .confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: card
+                }
+            })
+            .then(function(result) {
+                if (result.error) {
+                    // Show error to your customer
+                    showError(result.error.message);
+                } else {
+                    // The payment succeeded!
+                    orderComplete(result.paymentIntent.id);
+                }
+            });
+    };
+    /* ------- UI helpers ------- */
+    // Shows a success message when the payment is complete
+    var orderComplete = function(paymentIntentId) {
+        loading(false);
+        document
+            .querySelector(".result-message a")
+            .setAttribute(
+                "href",
+                "https://dashboard.stripe.com/test/payments/" + paymentIntentId
+            );
+        document.querySelector(".result-message").classList.remove("hidden");
+        document.querySelector("button").disabled = true;
+    };
+    // Show the customer the error from Stripe if their card fails to charge
+    var showError = function(errorMsgText) {
+        loading(false);
+        var errorMsg = document.querySelector("#card-error");
+        errorMsg.textContent = errorMsgText;
+        setTimeout(function() {
+            errorMsg.textContent = "";
+        }, 4000);
+    };
+    // Show a spinner on payment submission
+    var loading = function(isLoading) {
+        if (isLoading) {
+            // Disable the button and show a spinner
+            document.querySelector("button").disabled = true;
+            document.querySelector("#spinner").classList.remove("hidden");
+            document.querySelector("#button-text").classList.add("hidden");
+        } else {
+            document.querySelector("button").disabled = false;
+            document.querySelector("#spinner").classList.add("hidden");
+            document.querySelector("#button-text").classList.remove("hidden");
+        }
+    };
+</script>
+
+
